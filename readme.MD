@@ -9,7 +9,13 @@ Editing this config is necessary but it should be self-explanitory. You must hav
 
 Set the `PORT` under `SERVER_ADDRESS` as +1 of your server's set port.
 ## How it works:
-This server uses simple csv databases to store data like player deaths (via server logs) and player count (via Valve_Python API). The bot has not been tested on configurations with rotating logs, but it should (in theory) still work. 
+### Usage
+Prefix is dictated by bot command var in `vdb_main.py` - change it if needed.
+`help` shows help info
+`stats` shows 24 hours by default, other availables: w, 12
+`deaths` shows death leaderboards
+
+This bot uses simple csv databases to store data like player deaths (via server logs) and player count (via Valve_Python API). The bot has not been tested on configurations with rotating logs, but it should (in theory) still work. 
 
 The `_logsubprocess.py` script keeps databases updated so it is recommended that you use this in a separate `screen` instance or create it as a service under systemd. This ensures that even if you need to reload the main bot, the databases aren't corrupted. 
 
@@ -27,3 +33,4 @@ Most limitations on information gathered are rather a result of the server logs 
 + Allow admins to configure bot presence for custom status
 + Automatically create VC channel stats on new guild join
 + Change format of Random Mob Event to Embed type with unique formatting for each mob type
++ Create argument vars for top 10 for servers with more activity
