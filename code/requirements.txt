@@ -1,0 +1,7 @@
+matplotlib==3.3.4
+discord.py==1.6.0
+python_valve==0.2.1
+pandas==1.2.2
+emoji==1.2.0
+discord==1.0.1
+valve==0.0.0
