@@ -1,7 +1,8 @@
 # Still working on discord-side triggering
 
 # IMPORTANT! You must have a log for event reports and death leaderboards
-# logs are achieved by using -logFile flag on launch, or by logging stdout
+# logs are achieved by using -logfile flag on launch, or by logging stdout
+# Windows Users use forward slashes
 file = '/abs/path/to/ur/vhslog.txt'
 
 BOT_TOKEN = "YourBotToken1337"
