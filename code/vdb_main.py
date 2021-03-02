@@ -47,7 +47,7 @@ async def help_ctx(ctx):
 async def leaderboards(ctx):
     top_no = 5
     ldrembed = discord.Embed(title=":skull_crossbones: __Death Leaderboards (top 5)__ :skull_crossbones:", color=0xFFC02C)
-    df = pd.read_csv('csv\deathlog.csv', header=None, usecols=[0, 1])
+    df = pd.read_csv('csv/deathlog.csv', header=None, usecols=[0, 1])
     df_index = df[1].value_counts().nlargest(top_no).index
     df_score = df[1].value_counts().nlargest(top_no)
     x = 0
@@ -70,17 +70,17 @@ async def leaderboards(ctx):
 @bot.command(name="stats")
 async def gen_plot(ctx, tmf: typing.Optional[str] = '24'):
     user_range = 0
-    if tmf.lower() in ['w', 'week', 'weeks'] :
+    if tmf.lower() in ['w', 'week', 'weeks']:
         user_range = 168 - 1
         interval = 24
         date_format = '%m/%d'
         timedo = 'week'
         description = 'Players online in the past ' + timedo + ':'
-    elif tmf.lower() in ['6', '6hr', '6h']:
+    elif tmf.lower() in ['12', '12hrs', '12h', '12hr']:
         user_range = 12 - 0.15
         interval = 1
         date_format = '%H'
-        timedo = '6hrs'
+        timedo = '12hrs'
         description = 'Players online in the past ' + timedo + ':'
     else:
         user_range = 24 - 0.30
@@ -90,7 +90,7 @@ async def gen_plot(ctx, tmf: typing.Optional[str] = '24'):
         description = 'Players online in the past ' + timedo + ':'
 
     #Get data from csv
-    df = pd.read_csv('csv\playerstats.csv', header=None, usecols=[0, 1], parse_dates=[0], dayfirst=True)
+    df = pd.read_csv('csv/playerstats.csv', header=None, usecols=[0, 1], parse_dates=[0], dayfirst=True)
     lastday = datetime.now() - timedelta(hours = user_range)
     last24 = df[df[0]>=(lastday)]
 
