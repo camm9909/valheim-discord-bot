@@ -16,13 +16,13 @@ async def writecsv():
     while True:    
         try:
             with ServerQuerier(config.SERVER_ADDRESS) as server:
-                with open('csv\playerstats.csv', 'a', newline='') as f:
+                with open('csv/playerstats.csv', 'a', newline='') as f:
                     csvup = csv.writer(f, delimiter=',')  
                     curtime, players = await timenow(), server.info()['player_count']
                     csvup.writerow([curtime, players])
                     print(curtime, players)
         except NoResponseError:
-            with open('csv\playerstats.csv', 'a', newline='') as f:
+            with open('csv/playerstats.csv', 'a', newline='') as f:
                 csvup = csv.writer(f, delimiter=',')  
                 curtime, players = await timenow(), '0'
                 csvup.writerow([curtime, players])
@@ -37,7 +37,7 @@ async def deathcount():
                 line = f.readline()
                 if(re.search(pdeath, line)):
                     pname = re.search(pdeath, line).group(1)
-                    with open('csv\deathlog.csv', 'a', newline='') as dl:
+                    with open('csv/deathlog.csv', 'a', newline='') as dl:
                         curtime = await timenow()
                         deathup = csv.writer(dl, delimiter=',')
                         deathup.writerow([curtime, pname])
