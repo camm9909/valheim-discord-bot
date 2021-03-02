@@ -10,10 +10,14 @@ Editing this config is necessary but it should be self-explanitory. You must hav
 Set the `PORT` under `SERVER_ADDRESS` as +1 of your server's set port.
 ## How it works:
 ### Usage
-Prefix is dictated by bot command var in `vdb_main.py` - change it if needed.
+Prefix is dictated by bot command var in `vdb_main.py` - change it if needed. Default is `;` 
+
 `help` shows help info
+
 `stats` shows 24 hours by default, other availables: w, 12
+
 `deaths` shows death leaderboards
+
 
 This bot uses simple csv databases to store data like player deaths (via server logs) and player count (via Valve_Python API). The bot has not been tested on configurations with rotating logs, but it should (in theory) still work. 
 
