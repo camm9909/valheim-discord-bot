@@ -3,7 +3,7 @@
 
 The aim here is to connect player stats and server events to Discord seemlessly. 
 ## Prerequisites
-As per; install requirements via `pip install -r requirements.txt` in the code directory. It's recommended to run a python virtual environment but not necessary. The script is intended to run on the same server as the game host for interrupted access to server logs. Logs can be invoked on a dedicated valheimserver by passing the `-loglile` flag. For instances where the script and server are on different machines, remote logs could be possible in the future but this is something that would have to be developed.
+As per; install requirements via `pip install -r requirements.txt` in the code directory. It's recommended to run a python virtual environment but not necessary. The script is intended to run on the same server as the game host for interrupted access to server logs. Logs can be invoked on a dedicated valheimserver by passing the `-logfile` flag. For instances where the script and server are on different machines, remote logs could be possible in the future but this is something that would have to be developed.
 ## [config.py](https://github.com/ckbaudio/valheim-discord-bot/blob/main/code/config.py)
 Editing this config is necessary but it should be self-explanitory. You must have a server log file to make use of things like event reporting and death leaderboards, exceptions are handled if not possible. Pass `-logfile /home/steam/somelog.txt` if using [steamCMD](https://developer.valvesoftware.com/wiki/SteamCMD)
 
