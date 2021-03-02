@@ -29,7 +29,9 @@ Most limitations on information gathered are rather a result of the server logs 
 ![](https://github.com/ckbaudio/valheim-discord-bot/blob/main/img/Capture3.PNG "Player ticker")
 ![](https://github.com/ckbaudio/valheim-discord-bot/blob/main/img/deaths.png "Death leaderboards")
 ![](https://github.com/ckbaudio/valheim-discord-bot/blob/main/img/serverstats.png "Server stats with 12/24/W ranges")
+![](https://github.com/ckbaudio/valheim-discord-bot/blob/main/img/events.png "Event reporting")
 ![](https://github.com/ckbaudio/valheim-discord-bot/blob/main/img/help.PNG "Help commands for other members")
+
 
 ## To do:
 + Allow admins to configure bot with server info from Discord
