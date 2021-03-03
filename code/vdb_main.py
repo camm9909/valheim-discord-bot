@@ -45,7 +45,7 @@ def check_csvs():
     files = ['csv/playerstats.csv', 'csv/deathlog.csv']
     for f in files:
         if os.path.isfile(f):
-            print(Fore.GREEN + f, 'found!' + Style.RESET_ALL)
+            print(Fore.GREEN + f'{f} found!' + Style.RESET_ALL)
         else:
             with open(f, 'w+'):
                 print(Fore.YELLOW + 'doesn\'t exist, creating new...' + Style.RESET_ALL)
