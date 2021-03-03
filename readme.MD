@@ -34,8 +34,8 @@ Most limitations on information gathered are rather a result of the server logs 
 ![](https://github.com/ckbaudio/valheim-discord-bot/blob/main/img/events.png "Event reporting")
 ![](https://github.com/ckbaudio/valheim-discord-bot/blob/main/img/help.PNG "Help commands for other members")
 
-## Updates:
-### Small update, better exception handling
+## Updates: 
+#### (03/03/21) ‒ Small update, better exception handling
 + further file exception handling
 + create csv if not exist
 + color term output
