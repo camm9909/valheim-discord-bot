@@ -1,7 +1,8 @@
-import os, time, re, csv
-import discord, asyncio
-import config, emoji
+import os, time, re, csv, discord, asyncio, config, emoji, sys, colorama, typing, signal, errno
 from valve.source.a2s import ServerQuerier, NoResponseError
+from matplotlib import pyplot as plt
+from datetime import datetime, timedelta
+from colorama import Fore, Style, init
 from config import LOGCHAN_ID as lchanID
 from config import VCHANNEL_ID as chanID
 from config import file
@@ -9,23 +10,52 @@ from discord.ext import commands
 import matplotlib.dates as md
 import matplotlib.ticker as ticker
 import matplotlib.spines as ms
-from matplotlib import pyplot as plt
-from datetime import datetime, timedelta
 import pandas as pd
-import typing
+
+#Color init
+colorama.init()
 
 pdeath = '.*?Got character ZDOID from (\w+) : 0:0'
 pevent = '.*? Random event set:(\w+)'
-
 server_name = config.SERVER_NAME
 bot = commands.Bot(command_prefix=';', help_command=None)
 
     # maybe in the future for reformatting output of random mob events
     # eventype = ['Skeletons', 'Blobs', 'Forest Trolls', 'Wolves', 'Surtlings']
 
+def signal_handler(signal, frame):          # Method for catching SIGINT, cleaner output for restarting bot
+  os._exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
+
+async def timenow():
+    now = datetime.now()
+    gettime = now.strftime("%d/%m/%Y %H:%M:%S")
+    return gettime
+
+# Basic file checking
+def check_csvs():
+    try: 
+        os.makedirs('csv')
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            print(Fore.RED + 'Cannot create csv directory' + Style.RESET_ALL)
+            raise os._exit(1)
+
+    files = ['csv/playerstats.csv', 'csv/deathlog.csv']
+    for f in files:
+        if os.path.isfile(f):
+            print(Fore.GREEN + f, 'found!' + Style.RESET_ALL)
+        else:
+            with open(f, 'w+'):
+                print(Fore.YELLOW + 'doesn\'t exist, creating new...' + Style.RESET_ALL)
+            time.sleep(0.2)
+
+check_csvs()
+
 @bot.event
 async def on_ready():
-    print('Bot is online :)')
+    print(Fore.GREEN + f'Bot connected as {bot.user} :)' + Style.RESET_ALL)
     print('Log channel : %d' % (lchanID))
     if config.USEVCSTATS == True:
         print('VoIP channel: %d' % (chanID))
@@ -146,7 +176,7 @@ async def mainloop(file):
                     await asyncio.sleep(0.2)
     except IOError:
         print('No valid log found, event reports disabled. Please check config.py')
-        print('To generate server logs, run server with -logFile launch flag')  
+        print('To generate server logs, run server with -logfile launch flag')  
         
 async def serverstatsupdate():
 	await bot.wait_until_ready()
@@ -157,10 +187,10 @@ async def serverstatsupdate():
 				await channel.edit(name=f"{emoji.emojize(':eggplant:')} In-Game: {server.info()['player_count']}" +" / 10")
 
 		except NoResponseError:
-			print('Cannot connect to valve A2S')
+			print(Fore.RED + await timenow(), 'No reply from A2S, retrying (30s)... \n' + Style.RESET_ALL)
 			channel = bot.get_channel(chanID)
 			await channel.edit(name=f"{emoji.emojize(':cross_mark:')} Server Offline")
 		await asyncio.sleep(30)
-
+        
 bot.loop.create_task(mainloop(file))
 bot.run(config.BOT_TOKEN)
