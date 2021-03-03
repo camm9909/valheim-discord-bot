@@ -48,7 +48,7 @@ def check_csvs():
             print(Fore.GREEN + f'{f} found!' + Style.RESET_ALL)
         else:
             with open(f, 'w+'):
-                print(Fore.YELLOW + 'doesn\'t exist, creating new...' + Style.RESET_ALL)
+                print(Fore.YELLOW + f'{f}doesn\'t exist, creating new...' + Style.RESET_ALL)
             time.sleep(0.2)
 
 check_csvs()
