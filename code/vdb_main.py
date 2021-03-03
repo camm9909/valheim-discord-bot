@@ -187,7 +187,7 @@ async def serverstatsupdate():
 				await channel.edit(name=f"{emoji.emojize(':eggplant:')} In-Game: {server.info()['player_count']}" +" / 10")
 
 		except NoResponseError:
-			print(Fore.RED + await timenow(), 'No reply from A2S, retrying (30s)... \n' + Style.RESET_ALL)
+			print(Fore.RED + await timenow(), 'No reply from A2S, retrying (30s)...' + Style.RESET_ALL)
 			channel = bot.get_channel(chanID)
 			await channel.edit(name=f"{emoji.emojize(':cross_mark:')} Server Offline")
 		await asyncio.sleep(30)
