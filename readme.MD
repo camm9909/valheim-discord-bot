@@ -34,6 +34,13 @@ Most limitations on information gathered are rather a result of the server logs 
 ![](https://github.com/ckbaudio/valheim-discord-bot/blob/main/img/events.png "Event reporting")
 ![](https://github.com/ckbaudio/valheim-discord-bot/blob/main/img/help.PNG "Help commands for other members")
 
+## Updates:
+### Small update, better exception handling
++ further file exception handling
++ create csv if not exist
++ color term output
++ A2S timestamp failure
++ capture sigint for cleaner user rebooting
 
 ## To do:
 + Allow admins to configure bot with server info from Discord
