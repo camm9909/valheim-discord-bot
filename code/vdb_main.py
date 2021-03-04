@@ -163,7 +163,7 @@ async def mainloop(file):
         testfile = open(file)
         testfile.close()
         while not bot.is_closed():
-            with open(file) as f:
+            with open(file, encoding='utf8') as f:
                 f.seek(0,2)
                 while True:
                     line = f.readline()
