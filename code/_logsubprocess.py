@@ -31,7 +31,7 @@ async def writecsv():
 
 async def deathcount():
     while True:           
-        with open(log, 'r') as f:
+        with open(log, encoding='utf-8', mode='r') as f:
             f.seek(0,2)
             while True:
                 line = f.readline()
