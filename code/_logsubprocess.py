@@ -37,7 +37,7 @@ async def deathcount():
                 line = f.readline()
                 if(re.search(pdeath, line)):
                     pname = re.search(pdeath, line).group(1)
-                    with open('csv/deathlog.csv', 'a', newline='') as dl:
+                    with open('csv/deathlog.csv', 'a', newline='', encoding='utf-8') as dl:
                         curtime = await timenow()
                         deathup = csv.writer(dl, delimiter=',')
                         deathup.writerow([curtime, pname])
