@@ -184,7 +184,7 @@ async def serverstatsupdate():
 		try:
 			with ServerQuerier(config.SERVER_ADDRESS) as server:
 				channel = bot.get_channel(chanID)
-				await channel.edit(name=f"{emoji.emojize(':eggplant:')} In-Game: {server.info()['player_count']}" +" / 10")
+				await channel.edit(name=f"{emoji.emojize(':eggplant:')} In-Game: {server.info()['player_count']} / {server.info()['max_players']}")
 
 		except NoResponseError:
 			print(Fore.RED + await timenow(), 'No reply from A2S, retrying (30s)...' + Style.RESET_ALL)
