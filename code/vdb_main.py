@@ -19,6 +19,9 @@ colorama.init()
 
 pdeath = '.*?Got character ZDOID from (\w+) : 0:0'
 pevent = '.*? Random event set:(\w+)'
+plog = '(Got character ZDOID from )([\w ]+)(\s:)'
+phandshake = '.*handshake from client (\d+)'
+pdisconnected = '.*Closing socket (\d+)'
 timestamp = '(\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2})'
 
 server_name = config.SERVER_NAME
@@ -186,9 +189,9 @@ async def users(ctx):
                 if not line: 
                     break
 
-                handShake = re.search('.*handshake from client (\d+)', line)
-                user = re.search('(Got character ZDOID from )([\w ]+)(\s:)', line)
-                disconnected = re.search('.*Closing socket (\d+)', line)
+                handShake = re.search(phandshake, line)
+                user = re.search(plog, line)
+                disconnected = re.search(pdisconnected, line)
 
                 if(handShake):
                     id = handShake.group(1)
@@ -211,8 +214,8 @@ async def users(ctx):
                         lastUser.name = userName
                         lastUser = None
 
-        online_embed = discord.Embed(title=":eyes: __Online players__ :eggplant:", color=0xFFC02C)
-        offline_embed = discord.Embed(title=":eyes: __Offline players__ :eggplant:", color=0xFFC02C)
+        online_embed = discord.Embed(title=":axe: __Online Players__ :axe:", color=0xFFC02C)
+        offline_embed = discord.Embed(title=":axe: __Offline Players__ :axe:", color=0xFFC02C)
 
         for id in users:
             user = users[id]
