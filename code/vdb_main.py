@@ -1,3 +1,4 @@
+import enum
 import os, time, re, csv, discord, asyncio, config, emoji, sys, colorama, typing, signal, errno
 from valve.source.a2s import ServerQuerier, NoResponseError
 from matplotlib import pyplot as plt
@@ -11,12 +12,15 @@ import matplotlib.dates as md
 import matplotlib.ticker as ticker
 import matplotlib.spines as ms
 import pandas as pd
+import copy
 
 #Color init
 colorama.init()
 
 pdeath = '.*?Got character ZDOID from (\w+) : 0:0'
 pevent = '.*? Random event set:(\w+)'
+timestamp = '(\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2})'
+
 server_name = config.SERVER_NAME
 bot = commands.Bot(command_prefix=';', help_command=None)
 
@@ -27,6 +31,16 @@ def signal_handler(signal, frame):          # Method for catching SIGINT, cleane
   os._exit(0)
 
 signal.signal(signal.SIGINT, signal_handler)
+
+class User(object):
+    def __init__(self, name, id, connected, disconnected):
+        self.name = name
+        self.id = id
+        self.connected = connected
+        self.disconnected = disconnected
+
+    def __repr__(self):
+        return f'name: {self.name}, connected: {self.connected}, disconnected: {self.disconnected}, id: {self.id}'
 
 async def timenow():
     now = datetime.now()
@@ -70,6 +84,9 @@ async def help_ctx(ctx):
     help_embed.add_field(name="{}deaths".format(bot.command_prefix), 
                         value="Shows a top 5 leaderboard of players with the most deaths. \n Example:`{}deaths`".format(bot.command_prefix),
                         inline=True)
+    help_embed.add_field(name="{}players".format(bot.command_prefix), 
+                        value="Show players online and offline:`{}players`".format(bot.command_prefix),
+                        inline=True)                        
     help_embed.set_footer(text="Valbot v0.42")
     await ctx.send(embed=help_embed)
 
@@ -154,6 +171,69 @@ async def gen_plot(ctx, tmf: typing.Optional[str] = '24'):
     embed = discord.Embed(title=server_name, description=description, colour=12320855)
     embed.set_image(url='attachment://temp.png')
     await ctx.send(file=image, embed=embed)
+
+@bot.command(name="players")
+async def users(ctx):
+    try:
+        testFile = open(file)
+        testFile.close()
+        users = {}
+        with open(file, encoding='utf-8', mode='r') as f:
+            f.seek(0,0)
+            lastUser = None
+            while True:
+                line = f.readline()
+                if not line: 
+                    break
+
+                handShake = re.search('.*handshake from client (\d+)', line)
+                user = re.search('(Got character ZDOID from )([\w ]+)(\s:)', line)
+                disconnected = re.search('.*Closing socket (\d+)', line)
+
+                if(handShake):
+                    id = handShake.group(1)
+                    time = re.search(timestamp, line).group(1)
+                    newUser = User(None, id, time, None)
+                    users[id] =  newUser
+                    lastUser = newUser
+
+                elif(disconnected):
+                    id = disconnected[1]
+                    if not users[id]:
+                        continue
+                    user = users[id]
+                    time = re.search(timestamp, line).group(1)
+                    user.disconnected = time
+
+                elif(user):
+                    userName = user.group(2)
+                    if(lastUser):
+                        lastUser.name = userName
+                        lastUser = None
+
+        online_embed = discord.Embed(title=":eyes: __Online players__ :eggplant:", color=0xFFC02C)
+        offline_embed = discord.Embed(title=":eyes: __Offline players__ :eggplant:", color=0xFFC02C)
+
+        for id in users:
+            user = users[id]
+            if(user.disconnected):
+                offline_embed.add_field(name="{}".format(user.name), 
+                    value="connected at {}, disconnected at {}".format(user.connected, user.disconnected),
+                    inline=False)   
+            else:
+                online_embed.add_field(name="{}".format(user.name), 
+                    value="connected at {}".format(user.connected),
+                    inline=False)     
+
+        if(online_embed.fields):
+            await ctx.send(embed=online_embed)
+
+        if(offline_embed.fields):
+            await ctx.send(embed=offline_embed)        
+
+    except IOError:
+        print('issue getting players')
+    return
 
 async def mainloop(file):
     await bot.wait_until_ready()
