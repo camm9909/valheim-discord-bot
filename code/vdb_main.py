@@ -27,6 +27,9 @@ timestamp = '(\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2})'
 server_name = config.SERVER_NAME
 bot = commands.Bot(command_prefix=';', help_command=None)
 
+players = {}
+lastPlayer = None
+
     # maybe in the future for reformatting output of random mob events
     # eventype = ['Skeletons', 'Blobs', 'Forest Trolls', 'Wolves', 'Surtlings']
 
@@ -178,58 +181,24 @@ async def gen_plot(ctx, tmf: typing.Optional[str] = '24'):
 @bot.command(name="players")
 async def users(ctx):
     try:
-        testFile = open(file)
-        testFile.close()
-        users = {}
-        with open(file, encoding='utf-8', mode='r') as f:
-            f.seek(0,0)
-            lastUser = None
-            while True:
-                line = f.readline()
-                if not line: 
-                    break
-
-                handShake = re.search(phandshake, line)
-                user = re.search(plog, line)
-                disconnected = re.search(pdisconnected, line)
-
-                if(handShake):
-                    id = handShake.group(1)
-                    time = re.search(timestamp, line).group(1)
-                    newUser = User(None, id, time, None)
-                    users[id] =  newUser
-                    lastUser = newUser
-
-                elif(disconnected):
-                    id = disconnected[1]
-                    if not users[id]:
-                        continue
-                    user = users[id]
-                    time = re.search(timestamp, line).group(1)
-                    user.disconnected = time
-
-                elif(user):
-                    userName = user.group(2)
-                    if(lastUser):
-                        lastUser.name = userName
-                        lastUser = None
-
+        checkLogsForPlayerConnections()
         online_embed = discord.Embed(title=":axe: __Online Players__ :axe:", color=0xFFC02C)
         offline_embed = discord.Embed(title=":axe: __Offline Players__ :axe:", color=0xFFC02C)
 
-        for id in users:
-            user = users[id]
-            if(user.disconnected):
-                offline_embed.add_field(name="{}".format(user.name), 
-                    value="connected at {}, disconnected at {}".format(user.connected, user.disconnected),
+        for id in players:
+            player = players[id]
+            if(player.disconnected):
+                offline_embed.add_field(name="{}".format(player.name), 
+                    value="connected at {}, disconnected at {}".format(player.connected, player.disconnected),
                     inline=False)   
             else:
-                online_embed.add_field(name="{}".format(user.name), 
-                    value="connected at {}".format(user.connected),
+                online_embed.add_field(name="{}".format(player.name), 
+                    value="connected at {}".format(player.connected),
                     inline=False)     
 
         if(online_embed.fields):
             await ctx.send(embed=online_embed)
+
 
         if(offline_embed.fields):
             await ctx.send(embed=offline_embed)        
@@ -243,6 +212,7 @@ async def mainloop(file):
     lchannel = bot.get_channel(lchanID)
     print('Main loop: init')
     try:
+        checkLogsForPlayerConnections()
         testfile = open(file)
         testfile.close()
         while not bot.is_closed():
@@ -250,6 +220,9 @@ async def mainloop(file):
                 f.seek(0,2)
                 while True:
                     line = f.readline()
+                    playerToAnnounce = checkLogLineForPlayerConnections(line)
+                    if(playerToAnnounce):
+                        await sendPlayerAnnouncement(playerToAnnounce)             
                     if(re.search(pdeath, line)):
                         pname = re.search(pdeath, line).group(1)
                         await lchannel.send(':skull: **' + pname + '** just died!')
@@ -260,7 +233,71 @@ async def mainloop(file):
     except IOError:
         print('No valid log found, event reports disabled. Please check config.py')
         print('To generate server logs, run server with -logfile launch flag')  
-        
+
+async def sendPlayerAnnouncement(newPlayer):
+    global players
+    lchannel = bot.get_channel(lchanID)
+
+    try:
+        existingPlayer = players[newPlayer.id]
+        if (newPlayer.disconnected):
+            await lchannel.send(':axe: **' + existingPlayer.name + '** has left the server: ' + server_name)
+        elif(newPlayer.connected):
+            await lchannel.send(':axe: **' + existingPlayer.name + '** has entered the server: ' + server_name)
+        existingPlayer = newPlayer    
+
+    except IOError:
+        print("Error sending player announcement") 
+
+def checkLogsForPlayerConnections():
+    global lastPlayer
+
+    testFile = open(file)
+    testFile.close()
+    with open(file, encoding='utf-8', mode='r') as f:
+        f.seek(0,0)
+        lastPlayer = None
+        while True:
+            line = f.readline()
+            if not line: 
+                break
+            checkLogLineForPlayerConnections(line)
+                
+def checkLogLineForPlayerConnections(line):
+    global players
+    global lastPlayer
+
+    playerToAnnounce = None
+
+    handShake = re.search(phandshake, line)
+    player = re.search(plog, line)
+    disconnected = re.search(pdisconnected, line)
+
+    if(handShake):
+        id = handShake.group(1)
+        time = re.search(timestamp, line).group(1)
+        playerToAdd = User(None, id, time, None)
+        players[id] =  playerToAdd
+        lastPlayer = playerToAdd
+
+    elif(disconnected):
+        id = disconnected[1]
+        if not players[id]:
+            return
+        player = players[id]
+        time = re.search(timestamp, line).group(1)
+        player.disconnected = time
+        playerToAnnounce = player
+
+    elif(player):
+        playerName = player.group(2)
+        if(lastPlayer):
+            playerToAnnounce = copy.deepcopy(lastPlayer)
+            lastPlayer.name = playerName
+            lastPlayer = None
+
+    return playerToAnnounce
+
 async def serverstatsupdate():
 	await bot.wait_until_ready()
 	while not bot.is_closed():
