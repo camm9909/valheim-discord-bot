@@ -17,9 +17,9 @@ import copy
 #Color init
 colorama.init()
 
-pdeath = '.*?Got character ZDOID from (\w+) : 0:0'
+pdeath = '.*?Got character ZDOID from (.*) : 0:0'
 pevent = '.*? Random event set:(\w+)'
-plog = '(Got character ZDOID from )([\w ]+)(\s:)'
+plog = '(Got character ZDOID from )(.*)(\s:)'
 phandshake = '.*handshake from client (\d+)'
 pdisconnected = '.*Closing socket (\d+)'
 timestamp = '(\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2})'
@@ -186,7 +186,9 @@ async def users(ctx):
         offline_embed = discord.Embed(title=":axe: __Offline Players__ :axe:", color=0xFFC02C)
 
         for id in players:
+            
             player = players[id]
+            print(player)
             if(player.disconnected):
                 offline_embed.add_field(name="{}".format(player.name), 
                     value="connected at {}, disconnected at {}".format(player.connected, player.disconnected),
@@ -242,9 +244,8 @@ async def sendPlayerAnnouncement(newPlayer):
         existingPlayer = players[newPlayer.id]
         if (newPlayer.disconnected):
             await lchannel.send(':axe: **' + existingPlayer.name + '** has left the server: ' + server_name)
-        elif(newPlayer.connected):
+        else :
             await lchannel.send(':axe: **' + existingPlayer.name + '** has entered the server: ' + server_name)
-        existingPlayer = newPlayer    
 
     except IOError:
         print("Error sending player announcement") 
@@ -294,6 +295,7 @@ def checkLogLineForPlayerConnections(line):
         if(lastPlayer):
             playerToAnnounce = copy.deepcopy(lastPlayer)
             lastPlayer.name = playerName
+            print('lastPlayer: ', lastPlayer)
             lastPlayer = None
 
     return playerToAnnounce
