@@ -1,4 +1,3 @@
-import enum
 import os, time, re, csv, discord, asyncio, config, emoji, sys, colorama, typing, signal, errno
 from valve.source.a2s import ServerQuerier, NoResponseError
 from matplotlib import pyplot as plt
