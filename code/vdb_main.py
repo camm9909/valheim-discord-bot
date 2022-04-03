@@ -294,7 +294,6 @@ def checkLogLineForPlayerConnections(line):
         if(lastPlayer):
             playerToAnnounce = copy.deepcopy(lastPlayer)
             lastPlayer.name = playerName
-            print('lastPlayer: ', lastPlayer)
             lastPlayer = None
 
     return playerToAnnounce
