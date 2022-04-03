@@ -4,7 +4,7 @@ import csv, asyncio
 from valve.source.a2s import ServerQuerier, NoResponseError
 import config
 
-pdeath =  '.*?Got character ZDOID from (.*) : 0:0'
+pdeath = '.*?Got character ZDOID from (.*) : 0:0'
 log = config.file
 
 async def timenow():
