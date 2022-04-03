@@ -187,7 +187,6 @@ async def users(ctx):
         for id in players:
             
             player = players[id]
-            print(player)
             if(player.disconnected):
                 offline_embed.add_field(name="{}".format(player.name), 
                     value="connected at {}, disconnected at {}".format(player.connected, player.disconnected),
