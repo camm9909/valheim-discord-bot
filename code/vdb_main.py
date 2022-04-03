@@ -11,14 +11,23 @@ import matplotlib.dates as md
 import matplotlib.ticker as ticker
 import matplotlib.spines as ms
 import pandas as pd
+import copy
 
 #Color init
 colorama.init()
 
-pdeath = '.*?Got character ZDOID from (\w+) : 0:0'
+pdeath = '.*?Got character ZDOID from (.*) : 0:0'
 pevent = '.*? Random event set:(\w+)'
+plog = '(Got character ZDOID from )(.*)(\s:)'
+phandshake = '.*handshake from client (\d+)'
+pdisconnected = '.*Closing socket (\d+)'
+timestamp = '(\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2})'
+
 server_name = config.SERVER_NAME
 bot = commands.Bot(command_prefix=';', help_command=None)
+
+players = {}
+lastPlayer = None
 
     # maybe in the future for reformatting output of random mob events
     # eventype = ['Skeletons', 'Blobs', 'Forest Trolls', 'Wolves', 'Surtlings']
@@ -27,6 +36,16 @@ def signal_handler(signal, frame):          # Method for catching SIGINT, cleane
   os._exit(0)
 
 signal.signal(signal.SIGINT, signal_handler)
+
+class User(object):
+    def __init__(self, name, id, connected, disconnected):
+        self.name = name
+        self.id = id
+        self.connected = connected
+        self.disconnected = disconnected
+
+    def __repr__(self):
+        return f'name: {self.name}, connected: {self.connected}, disconnected: {self.disconnected}, id: {self.id}'
 
 async def timenow():
     now = datetime.now()
@@ -70,6 +89,9 @@ async def help_ctx(ctx):
     help_embed.add_field(name="{}deaths".format(bot.command_prefix), 
                         value="Shows a top 5 leaderboard of players with the most deaths. \n Example:`{}deaths`".format(bot.command_prefix),
                         inline=True)
+    help_embed.add_field(name="{}players".format(bot.command_prefix), 
+                        value="Show players online and offline:`{}players`".format(bot.command_prefix),
+                        inline=True)                        
     help_embed.set_footer(text="Valbot v0.42")
     await ctx.send(embed=help_embed)
 
@@ -155,11 +177,42 @@ async def gen_plot(ctx, tmf: typing.Optional[str] = '24'):
     embed.set_image(url='attachment://temp.png')
     await ctx.send(file=image, embed=embed)
 
+@bot.command(name="players")
+async def users(ctx):
+    try:
+        checkLogsForPlayerConnections()
+        online_embed = discord.Embed(title=":axe: __Online Players__ :axe:", color=0xFFC02C)
+        offline_embed = discord.Embed(title=":axe: __Offline Players__ :axe:", color=0xFFC02C)
+
+        for id in players:
+            
+            player = players[id]
+            if(player.disconnected):
+                offline_embed.add_field(name="{}".format(player.name), 
+                    value="connected at {}, disconnected at {}".format(player.connected, player.disconnected),
+                    inline=False)   
+            else:
+                online_embed.add_field(name="{}".format(player.name), 
+                    value="connected at {}".format(player.connected),
+                    inline=False)     
+
+        if(online_embed.fields):
+            await ctx.send(embed=online_embed)
+
+
+        if(offline_embed.fields):
+            await ctx.send(embed=offline_embed)        
+
+    except IOError:
+        print('issue getting players')
+    return
+
 async def mainloop(file):
     await bot.wait_until_ready()
     lchannel = bot.get_channel(lchanID)
     print('Main loop: init')
     try:
+        checkLogsForPlayerConnections()
         testfile = open(file)
         testfile.close()
         while not bot.is_closed():
@@ -167,6 +220,9 @@ async def mainloop(file):
                 f.seek(0,2)
                 while True:
                     line = f.readline()
+                    playerToAnnounce = checkLogLineForPlayerConnections(line)
+                    if(playerToAnnounce):
+                        await sendPlayerAnnouncement(playerToAnnounce)             
                     if(re.search(pdeath, line)):
                         pname = re.search(pdeath, line).group(1)
                         await lchannel.send(':skull: **' + pname + '** just died!')
@@ -177,7 +233,70 @@ async def mainloop(file):
     except IOError:
         print('No valid log found, event reports disabled. Please check config.py')
         print('To generate server logs, run server with -logfile launch flag')  
-        
+
+async def sendPlayerAnnouncement(newPlayer):
+    global players
+    lchannel = bot.get_channel(lchanID)
+
+    try:
+        existingPlayer = players[newPlayer.id]
+        if (newPlayer.disconnected):
+            await lchannel.send(':axe: **' + existingPlayer.name + '** has left the server: ' + server_name)
+        else :
+            await lchannel.send(':axe: **' + existingPlayer.name + '** has entered the server: ' + server_name)
+
+    except IOError:
+        print("Error sending player announcement") 
+
+def checkLogsForPlayerConnections():
+    global lastPlayer
+
+    testFile = open(file)
+    testFile.close()
+    with open(file, encoding='utf-8', mode='r') as f:
+        f.seek(0,0)
+        lastPlayer = None
+        while True:
+            line = f.readline()
+            if not line: 
+                break
+            checkLogLineForPlayerConnections(line)
+                
+def checkLogLineForPlayerConnections(line):
+    global players
+    global lastPlayer
+
+    playerToAnnounce = None
+
+    handShake = re.search(phandshake, line)
+    player = re.search(plog, line)
+    disconnected = re.search(pdisconnected, line)
+
+    if(handShake):
+        id = handShake.group(1)
+        time = re.search(timestamp, line).group(1)
+        playerToAdd = User(None, id, time, None)
+        players[id] =  playerToAdd
+        lastPlayer = playerToAdd
+
+    elif(disconnected):
+        id = disconnected[1]
+        if not players[id]:
+            return
+        player = players[id]
+        time = re.search(timestamp, line).group(1)
+        player.disconnected = time
+        playerToAnnounce = player
+
+    elif(player):
+        playerName = player.group(2)
+        if(lastPlayer):
+            playerToAnnounce = copy.deepcopy(lastPlayer)
+            lastPlayer.name = playerName
+            lastPlayer = None
+
+    return playerToAnnounce
+
 async def serverstatsupdate():
 	await bot.wait_until_ready()
 	while not bot.is_closed():
